@@ -3,6 +3,8 @@ const router = express.Router()
 const mongoose = require('mongoose')
 require("../models/Categoria")
 const Categoria = mongoose.model("categorias") 
+require('../models/Postagem')
+const Postagem = mongoose.model('postagens')
 
 router.get('/', (req, res) => {
     res.render("admin/index")
@@ -119,9 +121,24 @@ router.post("/categorias/deletar", (req, res) => {
     })
 })
 
-
-router.get("/teste", (req, res) => {
-    res.send("Isso é um teste")
+router.get("/postagens", (req, res) => {
+    Postagem.find().lean().populate("categoria").sort({data:'descending'}).then((postagens) => {
+        res.render("admin/postagens", {postagens: postagens})
+    }).catch((err) => {
+        req.flash("error_msg", "Houve um erro ao listar as categorias")
+        res.redirect("/admin")
+    })
 })
+
+router.get("/postagens/add", (req, res) => {
+    Categoria.find().lean().then((categorias) => {
+        res.render("admin/addpostagem", {categorias: categorias})
+    }).catch((err) => {
+        req.flash("error_msg", "Houve um erro ao carregar o formulario")
+        res.redirect("/admin")
+    })
+    
+})
+
 
 module.exports = router
